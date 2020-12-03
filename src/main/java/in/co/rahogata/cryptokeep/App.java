@@ -3,12 +3,229 @@
  */
 package in.co.rahogata.cryptokeep;
 
-public class App {
-    public String getGreeting() {
-        return "Hello world.";
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.Arrays;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+
+class App extends JPanel implements ActionListener, MouseListener {
+
+    private static final long serialVersionUID = 1L;
+
+    private JFrame frame;
+    private JPasswordField passwordField;
+    private JTextArea inputArea;
+    private JTextArea outputArea;
+    private transient DataCryptor dataCryptor;
+
+    public App(DataCryptor dataCryptor, JFrame frame) {
+        super(new GridBagLayout());
+        this.dataCryptor = dataCryptor;
+        this.frame = frame;
+
+        addInputArea();
+
+        addOutputArea();
+
+        addPasswordField();
+
+        addEncryptButton();
+
+        addDecryptButton();
+    }
+
+    /**
+     * 
+     */
+    private void addDecryptButton() {
+        JButton button = new JButton("Decrypt");
+        button.addActionListener(ae -> {
+            try {
+                char[] key = passwordField.getPassword();
+                if (key.length == 0
+                    || isNullOrEmpty(inputArea.getText())) {
+                    JOptionPane.showMessageDialog(frame, "Plain text and password are mandatory", "Input Error!",
+                        ERROR_MESSAGE);
+                    return;
+                }
+                String decrypted = dataCryptor.decrypt(passwordField.getPassword(), inputArea.getText());
+                outputArea.setText(decrypted);
+                cleanPassword(key);
+            } catch (DataCryptException e) {
+                JOptionPane.showMessageDialog(frame, e.getMessage(), "Decryption Failed!", ERROR_MESSAGE);
+            }
+        });
+        add(button);
+    }
+
+    /**
+     * 
+     */
+    private void addPasswordField() {
+        JLabel label = new JLabel("Password");
+        passwordField = new JPasswordField(20);
+        passwordField.addActionListener(this);
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        label.setLabelFor(passwordField);
+        add(label);
+        add(passwordField, c);
+    }
+
+    private void cleanPassword(char[] key) {
+        Arrays.fill(key, Character.MIN_VALUE);
+    }
+
+    /**
+     * 
+     */
+    private void addEncryptButton() {
+        JButton button = new JButton("Encrypt");
+        button.addActionListener(ae -> {
+            try {
+                char[] key = passwordField.getPassword();
+                if (key.length == 0
+                    || isNullOrEmpty(inputArea.getText())) {
+                    JOptionPane.showMessageDialog(frame, "Plain text input and password are mandatory", "Input Error!",
+                        ERROR_MESSAGE);
+                    return;
+                }
+                String encrypted = dataCryptor.encrypt(passwordField.getPassword(), inputArea.getText());
+                outputArea.setText(encrypted);
+                cleanPassword(key);
+            } catch (DataCryptException e) {
+                JOptionPane.showMessageDialog(frame, e.getMessage(), "Encryption Failed!", ERROR_MESSAGE);
+            }
+        });
+        add(button);
+    }
+
+    /**
+     * 
+     */
+    private void addOutputArea() {
+        JLabel label = new JLabel("Output");
+        outputArea = new JTextArea(5, 20);
+        outputArea.setEditable(false);
+        outputArea.setLineWrap(true);
+        outputArea.setWrapStyleWord(true);
+        
+        JScrollPane scrollPane = new JScrollPane(outputArea);
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        label.setLabelFor(outputArea);
+        add(label);
+        add(scrollPane, c);
+    }
+
+    private void addInputArea() {
+        JLabel label = new JLabel("Input");
+        inputArea = new JTextArea(5, 20);
+        inputArea.setEditable(true);
+        inputArea.setLineWrap(true);
+        inputArea.setWrapStyleWord(true);
+        inputArea.addMouseListener(this);
+        JScrollPane scrollPane = new JScrollPane(inputArea);
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        label.setLabelFor(scrollPane);
+        add(label);
+        add(scrollPane, c);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+        // NTDY.
+        System.out.println(evt);
+    }
+
+    /**
+     * Create the GUI and show it. For thread safety, this method should be invoked from the event dispatch thread.
+     */
+    private static void createAndShowGUI() {
+        // Create and set up the window.
+        JFrame frame = new JFrame("TextDemo");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Add contents to the window.
+        frame.add(new App(new DataCryptor(), frame));
+
+        // Display the window.
+        frame.pack();
+        frame.setVisible(true);
     }
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        // Schedule a job for the event dispatch thread:
+        // creating and showing this application's GUI.
+        SwingUtilities.invokeLater(App::createAndShowGUI);
+    }
+
+    /* (non-Javadoc)
+     * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
+     */
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        // TODO Auto-generated method stub
+        System.out.println(e);
+    }
+
+    /* (non-Javadoc)
+     * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
+     */
+    @Override
+    public void mousePressed(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
+     */
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
+     */
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
+     */
+    @Override
+    public void mouseExited(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
     }
 }

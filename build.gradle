@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.google.guava:guava:28.0-jre'
+    implementation 'com.google.guava:guava:29.0-jre'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
 
